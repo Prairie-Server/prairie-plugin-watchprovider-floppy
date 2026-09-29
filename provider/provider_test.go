@@ -18,8 +18,7 @@ import (
 func TestExchangeAPIKeyValidatesAndReturnsHostOwnedCredentials(t *testing.T) {
 	t.Parallel()
 	var authorization string
-	var upstream *httptest.Server
-	upstream = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/apis/listenbrainz/1/validate-token" {
 			t.Errorf("path = %q", r.URL.Path)
 			http.Error(w, "unexpected path", http.StatusNotFound)

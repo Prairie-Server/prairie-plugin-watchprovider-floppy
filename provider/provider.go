@@ -306,7 +306,7 @@ func (s *Server) client(requestedCapability string, config *pluginv1.WatchSyncPr
 	}
 	client, err := newAPIClient(baseURL, token, s.http)
 	if err != nil {
-		return nil, invalidRequestFault(err.Error())
+		return nil, invalidRequestFault("Floppy " + err.Error())
 	}
 	return client, nil
 }
