@@ -38,10 +38,10 @@ type apiClient struct {
 func newAPIClient(rawBaseURL, token string, httpClient *http.Client) (*apiClient, error) {
 	baseURL, err := url.Parse(strings.TrimSpace(rawBaseURL))
 	if err != nil || baseURL.Host == "" || (baseURL.Scheme != "http" && baseURL.Scheme != "https") {
-		return nil, errors.New("Floppy base URL must be an absolute http or https URL")
+		return nil, errors.New("base URL must be an absolute http or https URL")
 	}
 	if baseURL.User != nil || baseURL.RawQuery != "" || baseURL.Fragment != "" {
-		return nil, errors.New("Floppy base URL must not include credentials, a query, or a fragment")
+		return nil, errors.New("base URL must not include credentials, a query, or a fragment")
 	}
 	baseURL.Path = strings.TrimRight(baseURL.Path, "/")
 	if httpClient == nil {

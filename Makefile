@@ -1,4 +1,4 @@
-.PHONY: build test lint clean
+.PHONY: build test lint clean build-all
 
 BINARY=plugin
 PLATFORMS=linux/amd64 linux/arm64 darwin/arm64
@@ -16,9 +16,10 @@ lint:
 
 clean:
 	rm -f $(BINARY)
+	rm -rf dist
 
 build-all:
 	@for platform in $(PLATFORMS); do \
 		GOOS=$${platform%%/*} GOARCH=$${platform##*/} CGO_ENABLED=0 \
-		go build -trimpath -ldflags="$(LDFLAGS)" -o dist/$(BINARY)-$${platform%%/*}-$${platform##*/} .; \
+		go build -trimpath -ldflags="$(LDFLAGS)" -o dist/$(BINARY)-$${platform%%/*}-$${platform##*/} . || exit 1; \
 	done

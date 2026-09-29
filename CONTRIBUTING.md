@@ -31,12 +31,15 @@ GOWORK=off go vet ./...
 GOWORK=off go build ./...
 GOWORK=off go run . manifest >/dev/null
 gofmt -l .
+golangci-lint run ./...
+GOWORK=off go test ./... -count=1 -covermode=atomic -coverprofile=coverage.out
+./scripts/check-coverage.sh coverage.out
 ```
 
 The manifest command must exit successfully. `gofmt -l .` should print nothing;
 if it reports unrelated pre-existing drift, none of the Go files touched by your
 change may appear in the output. Do not add to the output, and report what
-remains. CI enforces a 95% statement coverage floor
+remains. CI runs golangci-lint v2.14.0 and enforces a 95% statement coverage floor
 (`scripts/check-coverage.sh`). Add focused coverage for authentication, identity mapping, retries,
 event idempotency, progress conversion, and upstream error handling when those
 behaviors change.
