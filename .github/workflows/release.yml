@@ -16,7 +16,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -72,24 +72,24 @@ jobs:
             goarch: arm64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.version.outputs.tag }}
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version: '1.26'
 
       - name: Configure module resolution
         run: |
           go env -w GOPROXY=direct
-          go env -w GOPRIVATE=github.com/Silo-Server/*
-          go env -w GONOSUMDB=github.com/Silo-Server/*
+          go env -w GOPRIVATE=github.com/prairie-server/*
+          go env -w GONOSUMDB=github.com/prairie-server/*
 
       - name: Reject committed local SDK replaces
         run: |
-          if grep -Eq '^replace github.com/Silo-Server/silo-plugin-sdk => /' go.mod; then
-            echo "go.mod contains a machine-local silo-plugin-sdk replace."
+          if grep -Eq '^replace github.com/prairie-server/prairie-plugin-sdk => /' go.mod; then
+            echo "go.mod contains a machine-local prairie-plugin-sdk replace."
             exit 1
           fi
 
@@ -109,7 +109,7 @@ jobs:
           sed "s/__CHECKSUM__/${checksum}/" manifest.json > "dist/manifest-${GOOS}-${GOARCH}.json"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: plugin-${{ matrix.goos }}-${{ matrix.goarch }}
           path: |
@@ -121,10 +121,10 @@ jobs:
     needs: [version, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
@@ -140,7 +140,7 @@ jobs:
           sort -u -o release/checksums.txt release/checksums.txt
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.version.outputs.tag }}
           files: |
@@ -150,13 +150,13 @@ jobs:
             release/checksums.txt
           generate_release_notes: true
 
-      - name: Notify silo-plugins catalog
+      - name: Notify prairie-plugins catalog
         env:
-          DISPATCH_TOKEN: ${{ secrets.SILO_PLUGINS_DISPATCH_TOKEN }}
+          DISPATCH_TOKEN: ${{ secrets.PRAIRIE_PLUGINS_DISPATCH_TOKEN }}
           PLUGIN_REPO: ${{ github.repository }}
         run: |
           if [ -z "$DISPATCH_TOKEN" ]; then
-            echo "SILO_PLUGINS_DISPATCH_TOKEN is not set; skipping catalog dispatch."
+            echo "PRAIRIE_PLUGINS_DISPATCH_TOKEN is not set; skipping catalog dispatch."
             exit 0
           fi
           curl --fail --silent --show-error \
@@ -164,5 +164,5 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${DISPATCH_TOKEN}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/Silo-Server/silo-plugins/dispatches \
+            https://api.github.com/repos/prairie-server/prairie-plugins/dispatches \
             -d "$(printf '{"event_type":"plugin_release_published","client_payload":{"repo":"%s","tag":"%s"}}' "${PLUGIN_REPO}" "${{ needs.version.outputs.tag }}")"

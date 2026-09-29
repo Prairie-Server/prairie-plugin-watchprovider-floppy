@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	pluginv1 "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1"
+	pluginv1 "github.com/prairie-server/prairie-plugin-sdk/pkg/pluginproto/prairie/plugin/v1"
 )
 
 const (
@@ -196,7 +196,7 @@ func ratingTitleID(phase string, entry ratedMediaEntry) string {
 	}
 	// Floppy files movies and TV under TMDB or manual entries, and its media
 	// routes cannot reach manual titles or TV kept in the anime library bucket.
-	// Importing them would produce ratings that Silo can never update.
+	// Importing them would produce ratings that Prairie can never update.
 	if !strings.EqualFold(strings.TrimSpace(item.Source), "tmdb") ||
 		(phase == floppyTV && strings.EqualFold(strings.TrimSpace(item.LibraryMediaType), "anime")) {
 		return ""
@@ -261,7 +261,7 @@ func resolveTitleScore(ctx context.Context, client *apiClient, floppyMediaType, 
 	return 0, temporaryFault("Floppy did not return the entry that holds a rated title's score; the sync will retry", 0)
 }
 
-// ratingFromScore converts Floppy's 0-10 decimal score to Silo's 1-10 integer
+// ratingFromScore converts Floppy's 0-10 decimal score to Prairie's 1-10 integer
 // rating, rounding half up and clamping to the valid range.
 func ratingFromScore(score float64) int32 {
 	return int32(min(10, max(1, math.Floor(score+0.5))))

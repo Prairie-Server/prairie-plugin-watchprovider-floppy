@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	pluginv1 "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1"
+	pluginv1 "github.com/prairie-server/prairie-plugin-sdk/pkg/pluginproto/prairie/plugin/v1"
 )
 
 const providerCursorOverlap = 2 * time.Second
@@ -31,7 +31,7 @@ func (s *Server) listWatched(ctx context.Context, client *apiClient, req *plugin
 		"logging_style": {"sessions"},
 	}
 	if !cursor.IsZero() {
-		// Floppy filters dates in its server timezone while Silo cursors are UTC.
+		// Floppy filters dates in its server timezone while Prairie cursors are UTC.
 		// Widen by a day and apply the exact timestamp bounds locally.
 		query.Set("start_date", cursor.Add(-24*time.Hour).Format(time.DateOnly))
 	}

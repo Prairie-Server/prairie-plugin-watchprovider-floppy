@@ -1,19 +1,19 @@
 # Contributing to the Floppy Watch Provider Plugin
 
-The [Silo contribution guide](https://github.com/Silo-Server/.github/blob/main/CONTRIBUTING.md)
+The [Prairie contribution guide](https://github.com/prairie-server/prairie-server/blob/main/CONTRIBUTING.md)
 covers project-wide coordination, focused changes, evidence, AI disclosure, and
 pull request expectations. Those requirements apply here; this guide adds the
 plugin-specific workflow.
 
 ## Before you start
 
-Open an [issue](https://github.com/Silo-Server/silo-plugin-watchprovider-floppy/issues)
+Open an [issue](https://github.com/prairie-server/prairie-plugin-watchprovider-floppy/issues)
 before changing authentication, reconciliation, idempotency, supported state,
 configuration, or the advertised capability. This repository owns the Floppy
 adapter; plugin contracts belong in
-[`silo-plugin-sdk`](https://github.com/Silo-Server/silo-plugin-sdk), while host
+[`prairie-plugin-sdk`](https://github.com/prairie-server/prairie-plugin-sdk), while host
 watch-sync orchestration belongs in
-[`silo-server`](https://github.com/Silo-Server/silo-server).
+[`prairie-server`](https://github.com/prairie-server/prairie-server).
 
 ## Development setup
 
@@ -36,7 +36,8 @@ gofmt -l .
 The manifest command must exit successfully. `gofmt -l .` should print nothing;
 if it reports unrelated pre-existing drift, none of the Go files touched by your
 change may appear in the output. Do not add to the output, and report what
-remains. Add focused coverage for authentication, identity mapping, retries,
+remains. CI enforces a 95% statement coverage floor
+(`scripts/check-coverage.sh`). Add focused coverage for authentication, identity mapping, retries,
 event idempotency, progress conversion, and upstream error handling when those
 behaviors change.
 
@@ -44,5 +45,5 @@ behaviors change.
 
 Use a Conventional Commit title, explain any sync, privacy, or retry risk, and
 paste the actual validation results. Read the
-[AI-assisted contribution policy](https://github.com/Silo-Server/silo-server/blob/main/docs/ai-contributions.md)
+[AI-assisted contribution policy](https://github.com/prairie-server/prairie-server/blob/main/docs/ai-contributions.md)
 and include its disclosure block.

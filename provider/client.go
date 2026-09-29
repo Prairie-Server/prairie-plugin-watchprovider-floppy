@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	pluginv1 "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1"
+	pluginv1 "github.com/prairie-server/prairie-plugin-sdk/pkg/pluginproto/prairie/plugin/v1"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
 
@@ -87,7 +87,7 @@ func (c *apiClient) request(ctx context.Context, method, path string, query url.
 	if err != nil {
 		return 0, temporaryFault("Floppy is temporarily unreachable", 0)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
 		return resp.StatusCode, faultForHTTPResponse(resp)

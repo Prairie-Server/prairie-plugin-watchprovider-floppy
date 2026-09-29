@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"testing"
 
-	pluginv1 "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1"
-	"github.com/Silo-Server/silo-plugin-sdk/pkg/pluginsdk/manifest"
+	pluginv1 "github.com/prairie-server/prairie-plugin-sdk/pkg/pluginproto/prairie/plugin/v1"
+	"github.com/prairie-server/prairie-plugin-sdk/pkg/pluginsdk/manifest"
+	"github.com/prairie-server/prairie-plugin-sdk/pkg/pluginsdk/runtime"
+
+	"github.com/prairie-server/prairie-plugin-watchprovider-floppy/provider"
 )
 
 func TestManifestDeclaresPerConnectionFloppyServer(t *testing.T) {
@@ -46,5 +50,34 @@ func TestManifestAdvertisesMovieAndSeriesRatings(t *testing.T) {
 	if !media[pluginv1.WatchSyncMediaType_WATCH_SYNC_MEDIA_TYPE_MOVIE] || !media[pluginv1.WatchSyncMediaType_WATCH_SYNC_MEDIA_TYPE_SERIES] ||
 		!media[pluginv1.WatchSyncMediaType_WATCH_SYNC_MEDIA_TYPE_EPISODE] {
 		t.Fatalf("supported media types = %v", descriptor.GetSupportedMediaTypes())
+	}
+}
+
+func TestMainServesWatchSyncProviderWithEmbeddedManifest(t *testing.T) {
+	original, originalVersion := serveManifest, version
+	t.Cleanup(func() { serveManifest, version = original, originalVersion })
+	version = "1.2.3-test"
+	calls := 0
+	var gotManifest []byte
+	var gotVersion string
+	var gotServers runtime.CapabilityServers
+	serveManifest = func(manifestBytes []byte, v string, servers runtime.CapabilityServers) {
+		calls++
+		gotManifest, gotVersion, gotServers = manifestBytes, v, servers
+	}
+
+	main()
+
+	if calls != 1 {
+		t.Fatalf("serveManifest calls = %d, want 1", calls)
+	}
+	if !bytes.Equal(gotManifest, manifestJSON) || len(gotManifest) == 0 {
+		t.Fatalf("manifest bytes were not the embedded manifest")
+	}
+	if gotVersion != "1.2.3-test" {
+		t.Fatalf("version = %q, want 1.2.3-test", gotVersion)
+	}
+	if _, ok := gotServers.WatchSyncProvider.(*provider.Server); !ok {
+		t.Fatalf("WatchSyncProvider = %T, want *provider.Server", gotServers.WatchSyncProvider)
 	}
 }

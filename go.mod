@@ -1,9 +1,9 @@
-module github.com/Silo-Server/silo-plugin-watchprovider-floppy
+module github.com/prairie-server/prairie-plugin-watchprovider-floppy
 
 go 1.26.5
 
 require (
-	github.com/Silo-Server/silo-plugin-sdk v0.17.0
+	github.com/prairie-server/prairie-plugin-sdk v0.12.1-0.20260928152428-c2f90523e166
 	google.golang.org/protobuf v1.36.11
 )
 
