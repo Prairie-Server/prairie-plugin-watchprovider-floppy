@@ -4,6 +4,7 @@ import (
 	_ "embed"
 
 	"github.com/prairie-server/prairie-plugin-sdk/pkg/pluginsdk/runtime"
+
 	"github.com/prairie-server/prairie-plugin-watchprovider-floppy/provider"
 )
 
@@ -13,8 +14,11 @@ var version string
 //go:embed manifest.json
 var manifestJSON []byte
 
+// serveManifest is a test seam over runtime.ServeManifest.
+var serveManifest = runtime.ServeManifest
+
 func main() {
-	runtime.ServeManifest(manifestJSON, version, runtime.CapabilityServers{
+	serveManifest(manifestJSON, version, runtime.CapabilityServers{
 		WatchSyncProvider: provider.NewServer(nil),
 	})
 }
