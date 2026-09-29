@@ -2,37 +2,88 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COVER_MIN: "95"
+
 jobs:
-  test:
+  lint:
+    name: Go lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7
         with:
-          go-version: '1.26'
+          persist-credentials: false
+          fetch-depth: 0
 
-      - name: Configure module resolution
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Configure private module resolution
         run: |
           go env -w GOPROXY=direct
-          go env -w GOPRIVATE=github.com/Silo-Server/*
-          go env -w GONOSUMDB=github.com/Silo-Server/*
+          go env -w GOPRIVATE=github.com/prairie-server/*
+          go env -w GONOSUMDB=github.com/prairie-server/*
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
+          only-new-issues: true
+          args: --timeout=5m
+
+  test:
+    name: Go tests + coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Configure private module resolution
+        run: |
+          go env -w GOPROXY=direct
+          go env -w GOPRIVATE=github.com/prairie-server/*
+          go env -w GONOSUMDB=github.com/prairie-server/*
 
       - name: Reject committed local SDK replaces
         run: |
-          if grep -Eq '^replace github.com/Silo-Server/silo-plugin-sdk => /' go.mod; then
-            echo "go.mod contains a machine-local silo-plugin-sdk replace."
+          if grep -Eq '^replace github.com/prairie-server/prairie-plugin-sdk => /' go.mod; then
+            echo "go.mod contains a machine-local prairie-plugin-sdk replace."
             exit 1
           fi
 
-      - name: Run tests
+      - name: Run tests with coverage
         env:
           GOWORK: off
-        run: go test ./...
+        run: |
+          go test ./... -count=1 -covermode=atomic -coverprofile=coverage.out || true
+          test -s coverage.out
+
+      - name: Enforce coverage floor
+        run: ./scripts/check-coverage.sh coverage.out
+
+      - name: Upload coverage profile
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-out
+          path: coverage.out
+          if-no-files-found: ignore

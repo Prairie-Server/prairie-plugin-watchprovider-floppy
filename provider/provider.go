@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	pluginv1 "github.com/Silo-Server/silo-plugin-sdk/pkg/pluginproto/silo/plugin/v1"
+	pluginv1 "github.com/prairie-server/prairie-plugin-sdk/pkg/pluginproto/prairie/plugin/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -239,7 +239,7 @@ func payloadFromEvent(event *pluginv1.WatchSyncEvent) (scrobblePayload, bool, *p
 		payload.Action = "stop"
 		completed = event.GetCompleted()
 		// Floppy falls back to a duration-buffer heuristic when completed is
-		// omitted. Always send Silo's authoritative completion state so an
+		// omitted. Always send Prairie's authoritative completion state so an
 		// incomplete stop near the end of a short title stays incomplete.
 		payload.Completed = boolPointer(completed)
 	default:
