@@ -59,7 +59,7 @@ func TestListWatchedAppliesCursorBoundsLocally(t *testing.T) {
 	defer upstream.Close()
 
 	response := listState(t, upstream.URL, upstream.Client(), &pluginv1.WatchSyncListRemoteStateRequest{
-		StateKinds: watchedKinds, Cursor: cursor.Format(time.RFC3339Nano),
+		StateKinds: watchedKinds, Cursor: watchedCursorPrefix + cursor.Format(time.RFC3339Nano),
 	})
 	if response.GetFault() != nil || response.GetCompleteSnapshot() || response.GetNextPageToken() != "" {
 		t.Fatalf("response = %#v", response)
@@ -73,7 +73,7 @@ func TestListWatchedAppliesCursorBoundsLocally(t *testing.T) {
 	}
 	// The newest history row sets the high-water mark, even one that is not
 	// itself returned (here the in-progress row).
-	if want := cursor.Add(time.Hour - providerCursorOverlap).Format(time.RFC3339Nano); response.GetNextCursor() != want {
+	if want := watchedCursorPrefix + cursor.Add(time.Hour-providerCursorOverlap).Format(time.RFC3339Nano); response.GetNextCursor() != want {
 		t.Fatalf("next cursor = %q, want %q", response.GetNextCursor(), want)
 	}
 }
@@ -88,7 +88,7 @@ func TestListWatchedReportsFaults(t *testing.T) {
 		want   string
 		code   pluginv1.WatchSyncFaultCode
 	}{
-		{name: "cursor", req: &pluginv1.WatchSyncListRemoteStateRequest{Cursor: "bad"}, want: "Floppy cursor is invalid", code: pluginv1.WatchSyncFaultCode_WATCH_SYNC_FAULT_CODE_INVALID_REQUEST},
+		{name: "cursor", req: &pluginv1.WatchSyncListRemoteStateRequest{Cursor: watchedCursorPrefix + "bad"}, want: "Floppy cursor is invalid", code: pluginv1.WatchSyncFaultCode_WATCH_SYNC_FAULT_CODE_INVALID_REQUEST},
 		{name: "page token", req: &pluginv1.WatchSyncListRemoteStateRequest{PageToken: "!!"}, want: "Floppy page token is invalid", code: pluginv1.WatchSyncFaultCode_WATCH_SYNC_FAULT_CODE_INVALID_REQUEST},
 		{name: "upstream", status: http.StatusInternalServerError, req: &pluginv1.WatchSyncListRemoteStateRequest{}, want: "Floppy is temporarily unavailable", code: pluginv1.WatchSyncFaultCode_WATCH_SYNC_FAULT_CODE_TEMPORARY},
 		{name: "pagination", body: map[string]any{"pagination": map[string]any{"total": 1, "limit": 50, "offset": 7}, "results": []any{}},
