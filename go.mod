@@ -3,7 +3,7 @@ module github.com/prairie-server/prairie-plugin-watchprovider-floppy
 go 1.26.5
 
 require (
-	github.com/prairie-server/prairie-plugin-sdk v0.12.1-0.20260928152428-c2f90523e166
+	github.com/prairie-server/prairie-plugin-sdk v0.12.1-0.20261012211536-3ea8c11a9099
 	google.golang.org/protobuf v1.36.11
 )
 
